@@ -1,5 +1,3 @@
-; program that calculates pyramid surface
-
 section .data
 
 EXIT_SUCCESS equ 0
@@ -69,7 +67,8 @@ _start:
 calculationLoop:
 
     movzx   r8d, byte [aSides+rsi]
-    movzx   eax, r8d
+    movzx   r9d, word [aSides+rsi*2]
+    mov     eax, r8d
     mul dword [ddTwo]
     mul r9d
     mul r8d
