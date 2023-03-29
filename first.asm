@@ -26,7 +26,7 @@ _asm_main:
         call   print_string
 
         call   read_int
-        mov    [input1], Examine
+        mov    [input1], eax
 
         mov    eax, prompt2
         call   print_string
@@ -39,7 +39,7 @@ _asm_main:
         mov    ebx, eax 
 
         dump_regs 1
-        dump_regs 2, outmsg1, 1
+        dump_mem 2, outmsg1, 1
 
         mov    eax, outmsg1
         call   print_string
