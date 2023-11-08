@@ -9,24 +9,24 @@ SYS_exit        equ     60
 
 intNum          dd    1498
 
-section         .bss
-strNum             10
+section      .bss
+strNum          resb 10
 
 section     .text
 global  _start
 _start:
 
-mov     eax, dword [intNumb]
+mov     eax, dword [intNum]
 mov     rcx, 0
-mov     ebx, 10
+mov     rbx, 10
 
 divideLoop:
-mov     edx, 0
-div     ebx 
+mov     rdx, 0
+div     rbx 
 
 push    rdx 
 inc     rcx  
-cmp     eax, 0  
+cmp     rax, 0  
 jne     divideLoop  
 
 
@@ -35,11 +35,11 @@ pop     rax
 
 add     al, "0"
 
-mov     byte [rbx+rdi], al 
+mov     [strNum+rdi], al 
 inc     rdi  
 loop    popLoop   
 
-mov     byte [rbx+rdi], NULL  
+mov     byte [strNum+rdi], NULL  
 
 last:
 mov     rax, SYS_exit
