@@ -111,6 +111,48 @@ read_input:
     ret 
 
 update_snake:
+    mov esi, [snake_length]
+    mov edi, snake_segments
+    add edi, esi 
+    dec edi 
+
+    cmp dl, UP 
+    je .move_up
+
+    cmp dl, DOWN
+    je .move_down
+
+    cpm dl, LEFT
+    je .move_left
+
+    cmp dl, RIGHT
+    je .move_right
+
+.move_up:
+    sub eax, 80
+    jmp .update_done
+
+.move_down:
+    add eax, 80
+    jmp .update_done
+
+.move_left:
+    dec eax
+    jmp .update_done
+
+.move_right:
+    inc eax
+
+.update_done:
+    mov [snake_head], eax 
+
+.move_loop:
+    mov eax, [edi - 1]
+    mov [edi], eax 
+    dec edi 
+    cmp edi, snake_segments
+    jpe .move_loop
+
 
 
 check_collision:
@@ -132,6 +174,7 @@ game_over db 0
 snake_head dd 0
 snake_length dd 0
 snake_dir dd 0
+snake_segments dd 100 dup(0)
 food_pos dd 0
 food_pos_x dd 0
 food_pos_y dd 0
