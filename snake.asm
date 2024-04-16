@@ -201,11 +201,49 @@ check_collision:
 
 
 draw:
+    call clear_screen
 
+    mov esi, [snake_segments]
+    mov ecx, [snake_length]
 
+.draw_snake:
+    mov eax, [esi + ecx + 4]
+    call draw_char 
+    dec ecx 
+    jnz .draw_snake
+
+    mov eax, [food_pos_x]
+    mov ebx, [food_pos_y]
+    call draw_char 
+
+    ret 
+
+.draw_char:
+    push eax 
+    push ebx
+
+    mov ah, 0x0E
+    mov bh, 0 
+    mov bl, 0x07
+
+    add eax, 0x0020
+    mov al, byte [eax]
+    mov bh, 0 
+    mov cx, 1 
+    int 0x10 
+
+    pop ebx 
+    pop eax 
+    ret 
 
 delay:
+    mov ecx, 1000000
 
+.delay_loop:
+    dec ecx 
+    jnz .delay_loop 
+
+    ret 
 
 
 ; Data section
