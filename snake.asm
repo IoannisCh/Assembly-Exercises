@@ -5,7 +5,7 @@ _start:
     ; Initialize game 
 
     call clear_screen
-    cal init_snake
+    call init_snake
     call place_food
 
 game_loop:
@@ -28,7 +28,6 @@ game_over_message:
     ; Display Game Over message
     call clear_screen 
     mov edx, game_over_message
-    call print_string 
 
     ; Display Score
     ; call cleaniup routine 
@@ -74,7 +73,7 @@ place_food:
 read_input:
     mov ah, 0
     int 0x16
-    cpm al, 'w'
+    cmp al, 'w'
     je .up 
     cmp al, 's'
     je .down
@@ -93,13 +92,13 @@ read_input:
 .down:
     cmp byte [snake_dir], UP 
     je .cont 
-    move byte [snake_dir], DOWN
+    mov byte [snake_dir], DOWN
     jmp .cont
 
 .left:
     cmp byte [snake_dir],RIGHT
     je .cont
-    move byte [snake_dir],left
+    mov byte [snake_dir],LEFT
     jmp .cont
 
 .right:
@@ -122,7 +121,7 @@ update_snake:
     cmp dl, DOWN
     je .move_down
 
-    cpm dl, LEFT
+    cmp dl, LEFT
     je .move_left
 
     cmp dl, RIGHT
@@ -193,9 +192,6 @@ check_collision:
     cmp eax, 80 * 25
     jl .no_collision
 
-.snake_collided:
-    mov byte [game_over], 1
-
 .no_collision:
     ret 
 
@@ -218,7 +214,7 @@ draw:
 
     ret 
 
-.draw_char:
+draw_char:
     push eax 
     push ebx
 
@@ -248,17 +244,16 @@ delay:
 
 ; Data section
 section .data 
-game_over_msg db "Game Over", 0
-game_over db 0
-snake_head dd 0
-snake_length dd 0
-snake_dir dd 0
-snake_segments dd 100 dup(0)
-game_over db 0
-food_pos dd 0
-food_pos_x dd 0
-food_pos_y dd 0
-UP db 'w'
-DOWN db 's'
-LEFT db 'a'
-RIGHT db 'd' 
+    game_over_msg db "Game Over", 0
+    game_over db 0 
+    snake_head dd 0
+    snake_length dd 0
+    snake_dir dd 0
+    snake_segments dd 100 dup(0)
+    food_pos dd 0
+    food_pos_x dd 0
+    food_pos_y dd 0
+    UP db 'w'
+    DOWN db 's'
+    LEFT db 'a'
+    RIGHT db 'd' 
