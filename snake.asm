@@ -1,6 +1,9 @@
 section .text 
 global _start 
 
+extern print_string 
+extern draw_char 
+
 _start:
     ; Initialize game 
 
@@ -40,16 +43,25 @@ game_over_message:
 ; Game Functions
 
 clear_screen:
-    mov eax, 0x01   ;syscall for clear screen
+    ; Print debug message (for debugging)
+    mov ebx, 0x65726153 ; "Sare"
+    call print_string
+
+    mov eax, 0x01   ; syscall for clear screen
     xor ebx, ebx    ; page number 0
-    xor ecx, ecx    ; color atribute 0 
-    int 0x10        ; invoke video interrrupt 
-    ret 
+    xor ecx, ecx    ; color attribute 0
+    int 0x10        ; invoke video interrupt
+
+    ; Print debug message (for debugging)
+    mov ebx, 0x65726152 ; "Rare"
+    call print_string
+
+    ret
 
 init_snake:
     mov dword [snake_head], 0 
     mov dword [snake_length], 1
-    mov byte [snake_dir], RIGHT
+    mov byte [snake_dir], 0x04
     ret 
 
 place_food:
@@ -84,27 +96,27 @@ read_input:
     jmp .cont 
 
 .up:
-    cmp byte [snake_dir], DOWN 
+    cmp byte [snake_dir], 0x02
     je .cont 
-    mov byte [snake_dir], UP
+    mov byte [snake_dir], 0x01
     je .cont 
 
 .down:
-    cmp byte [snake_dir], UP 
+    cmp byte [snake_dir], 0x01
     je .cont 
-    mov byte [snake_dir], DOWN
+    mov byte [snake_dir], 0x02
     jmp .cont
 
 .left:
-    cmp byte [snake_dir],RIGHT
+    cmp byte [snake_dir], 0x04
     je .cont
-    mov byte [snake_dir],LEFT
+    mov byte [snake_dir], 0x03
     jmp .cont
 
 .right:
-    cmp byte [snake_dir],LEFT 
+    cmp byte [snake_dir], 0x03
     je .cont
-    mov byte [snake_dir],RIGHT
+    mov byte [snake_dir], 0x04
 
 .cont:
     ret 
@@ -115,16 +127,16 @@ update_snake:
     add edi, esi 
     dec edi 
 
-    cmp dl, UP 
+    cmp dl, 0x01 
     je .move_up
 
-    cmp dl, DOWN
+    cmp dl, 0x02
     je .move_down
 
-    cmp dl, LEFT
+    cmp dl, 0x03
     je .move_left
 
-    cmp dl, RIGHT
+    cmp dl, 0x04
     je .move_right
 
 .move_up:
@@ -146,13 +158,18 @@ update_snake:
     mov [snake_head], eax 
 
 .move_loop:
-    mov eax, [edi - 1]
-    mov [edi], eax 
+    dec esi 
+    test esi, esi 
+    jz .move_loop_exit 
+
+    mov edx, [edi - 1]
+    mov [edi], edx 
     dec edi 
-    cmp edi, snake_segments
-    jpe .move_loop
 
+    jmp .move_loop 
 
+.move_loop_exit:
+    ret 
 
 check_collision:
     mov eax, [snake_head]
@@ -164,37 +181,46 @@ check_collision:
     cmp ecx, 1 
     jle .check_boundary_collision 
 
-    cmp eax, [esi + ecx * 4]
+    mov eax, [esi + ecx * 4]
+    cmp eax, edx 
     je .snake_collided 
 
     dec ecx 
     jmp .check_self_collision 
 
 .check_boundary_collision:
-    mov edx, 80
-    mul edx 
-    add eax, edx 
+    movzx edx, byte [food_pos_x]
+    imul edx, edx, 80
+    
 
     cmp eax, 0
     jl .snake_collided
 
-    cmp eax, 80 * 25
-    jpe .snake_collided
+    movzx ebx, byte [food_pos_x]
+    movzx ecx, byte [food_pos_y]
+    imul ebx, ebx, 80
+    add ecx, ebx
+    cmp eax, ecx
+    jge .snake_collided
 
     cmp eax, 0
     jp .check_bottom_boundary
+
+    jmp .no_collision
 
 .snake_collided:
     mov byte [game_over], 1 
     ret 
 
 .check_bottom_boundary:
-    cmp eax, 80 * 25
-    jl .no_collision
+    movzx edx, byte [food_pos_x]
+    imul edx, edx, 80
+    add edx, 25
+    cmp eax, edx
+    jl .snake_collided
 
 .no_collision:
     ret 
-
 
 draw:
     call clear_screen
@@ -257,3 +283,70 @@ section .data
     DOWN db 's'
     LEFT db 'a'
     RIGHT db 'd' 
+
+
+
+
+
+
+    print_newline:
+    mov eax, 0x0A0D
+    mov ebx, 1
+    mov ecx, eax
+    mov edx, 2
+    int 0x80
+    ret
+
+print_hex:
+    push eax
+    push ebx
+    push ecx
+    push edx
+
+    mov eax, ebx
+    mov ecx, 16
+    mov ebx, 0
+    mov edx, 0
+
+.next_digit:
+    mov edx, eax
+    and edx, 0x0F
+    add dl, '0'
+    cmp dl, '9'
+    jbe .skip_alpha
+    add dl, 7
+
+.skip_alpha:
+    mov [esp], dl
+    mov eax, 4
+    mov ebx, 1
+    lea ecx, [esp]
+    int 0x80
+
+    shr ebx, 4
+    test ebx, ebx
+    jnz .next_digit
+
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+
+print_string:
+    push eax
+    push ebx
+    push ecx
+    push edx
+
+    mov eax, 4
+    mov ebx, 1
+    lea ecx, [esp + 16]
+    mov edx, 4
+    int 0x80
+
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
