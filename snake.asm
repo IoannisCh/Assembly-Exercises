@@ -156,7 +156,48 @@ update_snake:
 
 
 check_collision:
+    mov eax, [snake_head]
 
+    mov esi, [snake_segments]
+    mov ecx, [snake_length]
+
+.check_self_collision:
+    cmp ecx, 1 
+    jle .check_boundary_collision 
+
+    cmp eax, [esi + ecx * 4]
+    je .snake_collided 
+
+    dec ecx 
+    jmp .check_self_collision 
+
+.check_boundary_collision:
+    mov edx, 80
+    mul edx 
+    add eax, edx 
+
+    cmp eax, 0
+    jl .snake_collided
+
+    cmp eax, 80 * 25
+    jpe .snake_collided
+
+    cmp eax, 0
+    jp .check_bottom_boundary
+
+.snake_collided:
+    mov byte [game_over], 1 
+    ret 
+
+.check_bottom_boundary:
+    cmp eax, 80 * 25
+    jl .no_collision
+
+.snake_collided:
+    mov byte [game_over], 1
+
+.no_collision:
+    ret 
 
 
 draw:
@@ -175,6 +216,7 @@ snake_head dd 0
 snake_length dd 0
 snake_dir dd 0
 snake_segments dd 100 dup(0)
+game_over db 0
 food_pos dd 0
 food_pos_x dd 0
 food_pos_y dd 0
