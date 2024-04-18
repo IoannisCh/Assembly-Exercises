@@ -43,20 +43,14 @@ game_over_message:
 ; Game Functions
 
 clear_screen:
-    ; Print debug message (for debugging)
-    mov ebx, 0x65726153 ; "Sare"
-    call print_string
 
-    mov eax, 0x01   ; syscall for clear screen
-    xor ebx, ebx    ; page number 0
-    xor ecx, ecx    ; color attribute 0
-    int 0x10        ; invoke video interrupt
-
-    ; Print debug message (for debugging)
-    mov ebx, 0x65726152 ; "Rare"
-    call print_string
-
-    ret
+    mov ah, 0x06 
+    mov al, 0x00 
+    mov bh, 0x07 
+    mov cx, 0x0000
+    mov dx, 0x184F
+    int 0x10 
+    ret 
 
 init_snake:
     mov dword [snake_head], 0 
